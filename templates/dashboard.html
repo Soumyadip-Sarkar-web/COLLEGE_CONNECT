@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>College Connet</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="https://www.ggu.ac.in/images/logo.png">
+</head>
+<body>
+    <div class="logo-container">
+    
+    <div class="logo-text">GGU Bilaspur</div>
+    </div>
+    <header class="top-nav">
+        <form action="/dashboard" method="GET" class="search-form">
+            <input type="text" name="search" placeholder="🔍 Search questions..." value="{{ request.args.get('search', '') }}">
+            <button type="submit">Search</button>
+        </form>
+    </header>
+
+    <div class="main-container">
+        <div class="post-box">
+            <h3>Welcome, {{ user }}!</h3>
+
+
+
+            <div style="margin-bottom: 15px;">
+                <a href="/history" style="color: #1877f2; font-size: 0.9rem; text-decoration: none;">📁 View All Previous Questions</a>
+            </div>
+
+
+
+
+
+
+
+
+
+            <form action="/post_question" method="POST">
+                <textarea name="content" placeholder="What is your question?" required></textarea>
+                <button type="submit">Post Question</button>
+            </form>
+        </div>
+
+        <div class="history-feed">
+            {% for q in questions %}
+            <div class="question-card">
+                <p class="author">Asked by: @{{ q.username }}</p>
+                <h2>{{ q.content }}</h2>
+                
+                <div class="actions">
+                    <a href="/upvote/{{ q.id }}" class="upvote-btn">⬆️ Upvote ({{ q.upvotes }})</a>
+                </div>
+                 <div class="answers-feed" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                      {% for ans in answers %}
+                    {% if ans.question_id == q.id %}
+            <div class="single-reply" style="margin-bottom: 8px;">
+                <strong style="font-size: 0.8rem; color: #1877f2;">@{{ ans.username }}:</strong>
+                <span style="font-size: 0.9rem;">{{ ans.reply_text }}</span>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+                <div class="reply-container">
+                    <form action="/reply/{{ q.id }}" method="POST">
+                        <input type="text" name="reply_text" placeholder="Write a reply..." required>
+                        <button type="submit">Reply</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="jarvis-launcher" onclick="toggleJarvis()" style="position: fixed; bottom: 20px; right: 20px; background: #000; color: gold; border: 2px solid gold; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    🤖
+</div>
+
+<div id="jarvis-container" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 320px; background: #121212; border: 1px solid #333; border-radius: 15px; overflow: hidden; z-index: 1000; font-family: 'Segoe UI', sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div style="background: #000; color: gold; padding: 15px; font-weight: bold; border-bottom: 1px solid #333; display: flex; justify-content: space-between;">
+        <span>J.A.R.V.I.S. Assistant</span>
+        <span onclick="toggleJarvis()" style="cursor: pointer;">✖</span>
+    </div>
+    <div id="jarvis-chatlog" style="height: 250px; padding: 15px; overflow-y: auto; color: #e0e0e0; font-size: 0.9rem; line-height: 1.4;">
+        <p style="color: gold;">[System]: Jarvis is online. How can I assist you, Sir?</p>
+    </div>
+    <div style="padding: 10px; background: #1a1a1a; display: flex; gap: 5px;">
+        <input type="text" id="jarvis-input" placeholder="Type a command..." style="flex: 1; background: #333; border: none; color: white; padding: 8px; border-radius: 5px;">
+        <button onclick="sendToJarvis()" style="background: gold; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Send</button>
+    </div>
+</div>
+<script>
+    function toggleJarvis() {
+        const box = document.getElementById('jarvis-container');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function sendToJarvis() {
+        const inputField = document.getElementById('jarvis-input');
+        const chatLog = document.getElementById('jarvis-chatlog');
+        const query = inputField.value;
+
+        if (!query) return;
+
+        // FIXED: Using backticks (`) for template literals
+        chatLog.innerHTML += <div style="margin-bottom:10px; text-align:right;"><b>You:</b> ${query}</div>;
+        inputField.value = '';
+        chatLog.scrollTop = chatLog.scrollHeight;
+
+        const loadingId = "loading-" + Date.now();
+        chatLog.innerHTML += <div id="${loadingId}" style="color:gray; font-style:italic;">Jarvis is thinking...</div>;
+        
+        try {
+            const response = await fetch(`/jarvis_assist?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            const loadingElement = document.getElementById(loadingId);
+            if(loadingElement) loadingElement.remove();
+            
+            chatLog.innerHTML += <div style="margin-bottom:10px; color:gold;"><b>Jarvis:</b> ${data.reply}</div>;
+        } catch (error) {
+            const loadingElement = document.getElementById(loadingId);
+            if(loadingElement) loadingElement.innerHTML = "Jarvis: Connection error.";
+        }
+        
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    document.getElementById("jarvis-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            sendToJarvis();
+        }
+    });
+</script>
+</body>
+
+
+
+
+</html>

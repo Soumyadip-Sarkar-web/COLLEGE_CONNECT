@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Community Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/en/d/db/Guru_Ghasidas_Vishwavidyalaya_logo.png">
+</head>
+<body>
+
+   <!-- <div class="login-wrapper">
+        <div class="login-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/en/d/db/Guru_Ghasidas_Vishwavidyalaya_logo.png" alt="GGU Logo">
+        </div>-->
+        <div class="login-wrapper">
+    <div class="login-logo">
+        <!--<img src="https://upload.wikimedia.org/wikipedia/en/d/db/Guru_Ghasidas_Vishwavidyalaya_logo.png" alt="GGU Bilaspur">
+        <h2 style="color: white; margin-top: 10px;">GGU Bilaspur</h2> -->
+    </div>
+
+        <div class="login-card">
+            <h1>College connect</h1>
+            <p>Enter your User-ID (Name) and 4-Digit PIN to join the community</p>
+            
+            <form action="/login" method="POST">
+                <input type="text" name="username" placeholder="User ID (e.g. Rahul)" required>
+                <input type="password" name="pin" placeholder="4-Digit PIN" maxlength="4" pattern="\d{4}" required title="Please enter exactly 4 digits">
+                <button type="submit">Enter Community</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
