@@ -169,8 +169,8 @@ def jarvis_assist():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    if os.environ.get("RENDER") !="ture":
+        app.run(debug=True)
 
 
 
