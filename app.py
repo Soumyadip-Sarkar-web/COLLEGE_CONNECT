@@ -1,6 +1,6 @@
 from flask import Flask,render_template,request,redirect,url_for,session
 import pymysql
-
+import os
 #from jarvis import get_jarvis_response
 from flask import jsonify, request
 
@@ -169,7 +169,8 @@ def jarvis_assist():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if os.environ.get("RENDER") !="ture":
+        app.run(debug=True)
 
 
 
