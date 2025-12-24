@@ -101,40 +101,45 @@ def reply(q_id):
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('index'))
-    
-    # Get the word typed in the search bar
+
     search_query = request.args.get('search', '')
-    
+
     db = get_db()
     cursor = db.cursor()
-    
+
     if search_query:
-        # Search filter: Looks for the word anywhere in the question content
         query = """
-              SELECT questions.*, users.username
-              FROM questions
-              JOIN users ON questions.user_id = users.id
-              WHERE questions.content LIKE ?
-              ORDER BY created_at DESC
-                         """
-cursor.execute(query, ('%' + search_query + '%',))
+        SELECT questions.*, users.username
+        FROM questions
+        JOIN users ON questions.user_id = users.id
+        WHERE questions.content LIKE ?
+        ORDER BY created_at DESC
+        """
+        cursor.execute(query, ('%' + search_query + '%',))
     else:
-        # No search: Show everything
-        cursor.execute("SELECT questions.*, users.username FROM questions JOIN users ON questions.user_id = users.id ORDER BY created_at DESC")
-    
+        cursor.execute("""
+        SELECT questions.*, users.username
+        FROM questions
+        JOIN users ON questions.user_id = users.id
+        ORDER BY created_at DESC
+        """)
+
     all_questions = cursor.fetchall()
-    
-    # Still fetch all answers so they show up under filtered questions
-    cursor.execute("SELECT answers.*, users.username FROM answers JOIN users ON answers.user_id = users.id")
+
+    cursor.execute("""
+    SELECT answers.*, users.username
+    FROM answers
+    JOIN users ON answers.user_id = users.id
+    """)
     all_answers = cursor.fetchall()
-    
-    return render_template('dashboard.html', 
-                           user=session['username'], 
-                           questions=all_questions, 
-                           answers=all_answers,
-                           search_query=search_query)
 
-
+    return render_template(
+        'dashboard.html',
+        user=session['username'],
+        questions=all_questions,
+        answers=all_answers,
+        search_query=search_query
+    )
 
 @app.route('/history')
 def global_history():
