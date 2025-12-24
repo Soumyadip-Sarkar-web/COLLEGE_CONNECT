@@ -1,5 +1,5 @@
 from flask import Flask,render_template,request,redirect,url_for,session
-import pymysql
+import sqlite3
 import os
 #from jarvis import get_jarvis_response
 from flask import jsonify, request
@@ -9,14 +9,11 @@ app.secret_key="college_mini_project_key"
 #functions to connect to your MySQl database
 
 def get_db():
-    return pymysql.connect(
-        host="localhost",
-        user="root",
-        password="soumya4096",
-        database="quora_mini", 
-        cursorclass=pymysql.cursors.DictCursor
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
-    )
+
 #the opening page (login) 
 @app.route('/')
 def index():
@@ -32,7 +29,7 @@ def login():
     cursor = db.cursor()
     
     # Check if this User-ID (Name) already exists
-    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
     
     if user:
@@ -45,11 +42,11 @@ def login():
             return "<h1>Incorrect PIN! Go back and try again.</h1>"
     else:
         # If user doesn't exist, Create new account (Auto-Register)
-        cursor.execute("INSERT INTO users (username, pin) VALUES (%s, %s)", (username, pin))
+        cursor.execute("INSERT INTO users (username, pin) VALUES (?, ?)", (username, pin))
         db.commit()
         
         # Log them in immediately after creating account
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         new_user = cursor.fetchone()
         session['user_id'] = new_user['id']
         session['username'] = new_user['username']
@@ -70,7 +67,7 @@ def post_question():
     
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO questions (user_id, content) VALUES (%s, %s)", (user_id, content))
+    cursor.execute("INSERT INTO questions (user_id, content) VALUES (?, ?)", (user_id, content))
     db.commit()
     return redirect(url_for('dashboard'))
 
@@ -78,7 +75,7 @@ def post_question():
 def upvote(q_id):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("UPDATE questions SET upvotes = upvotes + 1 WHERE id = %s", (q_id,))
+    cursor.execute("UPDATE questions SET upvotes = upvotes + 1 WHERE id = ?", (q_id,))
     db.commit()
     return redirect(url_for('dashboard'))
 
@@ -92,7 +89,7 @@ def reply(q_id):
     
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO answers (question_id, user_id, reply_text) VALUES (%s, %s, %s)", 
+    cursor.execute("INSERT INTO answers (question_id, user_id, reply_text) VALUES (?, ?, ?)", 
                    (q_id, user_id, reply_text))
     db.commit()
     return redirect(url_for('dashboard'))
@@ -168,6 +165,6 @@ def jarvis_assist():
 
 
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
