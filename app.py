@@ -110,8 +110,14 @@ def dashboard():
     
     if search_query:
         # Search filter: Looks for the word anywhere in the question content
-        query = "SELECT questions.*, users.username FROM questions JOIN users ON questions.user_id = users.id WHERE questions.content LIKE %s ORDER BY created_at DESC"
-        cursor.execute(query, ('%' + search_query + '%',))
+        query = """
+              SELECT questions.*, users.username
+              FROM questions
+              JOIN users ON questions.user_id = users.id
+              WHERE questions.content LIKE ?
+              ORDER BY created_at DESC
+                         """
+cursor.execute(query, ('%' + search_query + '%',))
     else:
         # No search: Show everything
         cursor.execute("SELECT questions.*, users.username FROM questions JOIN users ON questions.user_id = users.id ORDER BY created_at DESC")
@@ -151,7 +157,7 @@ def global_history():
 
 
 
-
+'''
 @app.route('/jarvis_assist')
 def jarvis_assist():
     # This gets the text you typed in the Jarvis box
@@ -162,7 +168,7 @@ def jarvis_assist():
     
     # This sends the answer back to your website screen
     return jsonify({"reply": ai_reply})
-
+'''
 
 
 if __name__ == "__main__":
